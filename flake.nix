@@ -10,6 +10,10 @@
       devShells.default = pkgs.mkShell {
         packages = with pkgs; [ 
           julia
+          (python311.withPackages(ps: with ps; [
+              numpy
+              scikit-learn
+          ]))
         ];
       };
     });
