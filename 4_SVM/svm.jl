@@ -4,7 +4,7 @@ using LIBSVM
 using MLJ
 
 # "pin" the rng so we get the same results every time.
-rng = MersenneTwister()
+rng = MersenneTwister(4321)
 
 # Since RDatasets for julia did not offer the Wisconsin Breast Cancer Data Set,
 # I'm going with analysis on "High School and Beyond - 1982" Dataset from mlmRev.
@@ -17,24 +17,28 @@ hsab = dataset("mlmRev", "Hsb82")
 # we don't use the school in the dataset.
 shuffle!(rng, hsab)
 
-# delete 80% of the data.
-# if your computer is better than mine, feel free to remove this line. 
-delete!(hsab, randsubseq(rng, 1:size(hsab, 1), 0.8))
 
 #SVM's don't take catagorical data; we should map it to quantitive data.
 transform!(hsab, :Sx => ByRow(sex -> sex == "Male" ? 0 : 1) => :Sx)
 transform!(hsab, :Minrty => ByRow(minrty -> minrty == "No" ? 0 : 1) => :Minrty)
+transform!(hsab, :Sector => ByRow(sector -> sector == "Public" ? 0 : 1) => :Sector)
 
-# 0.2 will be the test set, 0.8 will be the training set
-test, train = partition(hsab, 0.2) 
-testX, testY = unpack(test, in([:MAch, :SSS, :Sx]), ==(:Minrty);)
-trainX, trainY = unpack(train, in([:MAch, :SSS, :Sx]), ==(:Minrty);)
+
+# 0.2 will be the test set, 0.8 will be the training set.
+test, train = partition(hsab, 0.2)
+
+# Feel free to adjust the features to see how the model changes.
+testX, testY = unpack(test, (col) -> col ∉ [:Minrty, :School], ==(:Minrty);)
+trainX, trainY = unpack(train, (col) -> col ∉ [:Minrty, :School], ==(:Minrty);)
+
+# lambda to "transpose" the matrix, such that the SVM can use it (SVM requires (features x data), dataframe gives (data x features))
+shapeData = matrix -> reshape(matrix, (size(testX, 2), :))
 
 testY, trainY = map(df -> convert(AbstractVector, df), [testY, trainY])
 
 # load the SVM model. Another package provides the SVM interface, and we
 # load it in to utilize it with MLJ constructs.
-svm = svmtrain(reshape(Matrix(trainX), (3, :)), trainY)
-yhat, decision_values = svmpredict(svm, reshape(Matrix(testX), (3, :)))
+svm = svmtrain(shapeData(Matrix(trainX)), trainY)
+yhat, decision_values = svmpredict(svm, shapeData(Matrix(testX)))
 
 println(mean(yhat .== testY))
