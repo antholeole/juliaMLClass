@@ -73,7 +73,7 @@ def learn_and_visual_mse(X, y, filename):
 
     X_aug = np.hstack((X, np.ones((X.shape[0], 1))))
     X_transpose = np.transpose(X_aug)
-    w = np.matmul(np.matmul(np.linalg.inv(np.matmul(X_transpose, X_aug)), X_transpose), y)
+    w = (np.linalg.inv(X_transpose @ X_aug) @ X_transpose) @ y
 
     plot_data_hyperplane(X, y, w, filename)
 

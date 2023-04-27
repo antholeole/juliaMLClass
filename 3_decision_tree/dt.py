@@ -4,6 +4,12 @@
 import operator
 import numpy, sklearn, sklearn.tree
 
+
+a = numpy.array([1, 2, 3])
+b = 2
+
+a >= b
+
 def estimate_gini_impurity(feature_values, threshold, labels, polarity):
     """Compute the gini impurity for comparing a feature value against a threshold under a given polarity
 
