@@ -27,7 +27,7 @@ transform!(hsab, :Sector => ByRow(sector -> sector == "Public" ? 0 : 1) => :Sect
 # 0.2 will be the test set, 0.8 will be the training set.
 test, train = partition(hsab, 0.2)
 
-# Feel free to adjust the features to see how the model changes.
+# Feel free to adjust the features to see how the model changes.ƒ
 testX, testY = unpack(test, (col) -> col ∉ [:Minrty, :School], ==(:Minrty);)
 trainX, trainY = unpack(train, (col) -> col ∉ [:Minrty, :School], ==(:Minrty);)
 
